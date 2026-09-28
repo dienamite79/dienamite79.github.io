@@ -1,43 +1,220 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<title>make da web chill again </title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>test title</title>
+<style>
+@font-face {
+  font-family: Sandstone;
+  src: url("Sandstone.ttf") format("truetype");
+}
+html, body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+}
+body {
+  display: grid;
+  place-items: center;
+  text-align: center;
+  color: #3a2618;
+}
+.scene {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+}
+.plate, .lobe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.plate {
+  animation: ground 21.538s ease-in-out infinite;
+}
+.lobe {
+  transform-origin: var(--x) var(--y);
+  -webkit-mask-image: radial-gradient(circle at var(--x) var(--y), #000 8%, transparent var(--r));
+  mask-image: radial-gradient(circle at var(--x) var(--y), #000 8%, transparent var(--r));
+  animation: lobe var(--dur) ease-in-out infinite;
+  animation-delay: var(--d);
+}
+@keyframes ground {
+  0%, 100% { filter: hue-rotate(-2.55deg) saturate(0.966); }
+  50% { filter: hue-rotate(3.4deg) saturate(1.085); }
+}
+@keyframes lobe {
+  0%, 100% {
+    transform: scale(1);
+    filter: hue-rotate(0deg) saturate(1);
+  }
+  50% {
+    transform: scale(var(--swell));
+    filter: hue-rotate(var(--hue)) saturate(var(--sat));
+  }
+}
+h1 span, p span {
+  display: inline-block;
+  white-space: pre;
+  transform-origin: center;
+}
+h1, p {
+  font-family: Sandstone, sans-serif;
+  font-weight: normal;
+  margin: 0;
+}
+h1 {
+  font-size: clamp(48px, 9vw, 120px);
+}
+p {
+  margin-top: 0.35em;
+  font-size: clamp(22px, 3.5vw, 48px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .plate, .lobe, main { animation: none; }
+}
+</style>
 </head>
+<body>
+<div class="scene" aria-hidden="true">
+  <img class="plate" src="sandstone_still.jpg" alt="">
+  <img class="lobe" style="--x:18%; --y:40%; --d:0s; --dur:14.769s; --swell:1.119; --hue:6.8deg; --sat:1.153; --r:48%" src="sandstone_still.jpg" alt="">
+  <img class="lobe" style="--x:48%; --y:22%; --d:-3.692s; --dur:12.462s; --swell:1.085; --hue:-5.1deg; --sat:1.102; --r:40%" src="sandstone_still.jpg" alt="">
+  <img class="lobe" style="--x:78%; --y:38%; --d:-7.231s; --dur:17.692s; --swell:1.136; --hue:8.5deg; --sat:1.17; --r:50%" src="sandstone_still.jpg" alt="">
+  <img class="lobe" style="--x:30%; --y:76%; --d:-9.385s; --dur:11.385s; --swell:1.102; --hue:-6.8deg; --sat:1.119; --r:44%" src="sandstone_still.jpg" alt="">
+  <img class="lobe" style="--x:70%; --y:80%; --d:-4.923s; --dur:15.846s; --swell:1.0765; --hue:4.25deg; --sat:1.136; --r:42%" src="sandstone_still.jpg" alt="">
+  <img class="lobe" style="--x:52%; --y:52%; --d:-8.462s; --dur:19.692s; --swell:1.068; --hue:5.95deg; --sat:1.085; --r:34%" src="sandstone_still.jpg" alt="">
+</div>
+<main>
+  <h1>test title</h1>
+  <p>test subtitle</p>
+</main>
+<script>
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const BEND = 3.4;
+const lobes = [...document.querySelectorAll('.lobe')].map((el) => ({
+  el,
+  x: parseFloat(el.style.getPropertyValue('--x')) / 100,
+  y: parseFloat(el.style.getPropertyValue('--y')) / 100,
+  r: parseFloat(el.style.getPropertyValue('--r')) / 100,
+}));
+const letters = [];
 
-<body bgcolor="white">
-<br><br><br><br><br><br>
+function split(el) {
+  const text = el.textContent;
+  el.textContent = '';
+  for (const ch of text) {
+    const span = document.createElement('span');
+    span.textContent = ch;
+    el.appendChild(span);
+    letters.push(span);
+  }
+}
 
-<center>
-<font face="Helvetica" size="6">
-liam tevy mike and nick present
-<br>
-&lt;... a QUADRUPLE bday party ... &gt;
-</font>
+document.querySelectorAll('main h1, main p').forEach(split);
 
-<br><br>
+function farthest(ox, oy, w, h) {
+  return Math.max(
+    Math.hypot(ox, oy),
+    Math.hypot(w - ox, oy),
+    Math.hypot(ox, h - oy),
+    Math.hypot(w - ox, h - oy)
+  );
+}
 
-<font face="Helvetica" size="7">
-~ a midsummer night's <s>dream</s> rave~
-</font>
+function falloff(px, py, lobe, w, h) {
+  const ox = lobe.x * w;
+  const oy = lobe.y * h;
+  const maxR = farthest(ox, oy, w, h);
+  const d = Math.hypot(px - ox, py - oy);
+  const inner = 0.08 * maxR;
+  const outer = lobe.r * maxR;
+  if (d <= inner) return 1;
+  if (d >= outer) return 0;
+  const t = (d - inner) / (outer - inner);
+  return 1 - t * t * (3 - 2 * t);
+}
 
-<br><br>
+function readLobe(lobe) {
+  const style = getComputedStyle(lobe.el);
+  const matrix = new DOMMatrix(style.transform);
+  const hue = /hue-rotate\(([-\d.]+)deg\)/.exec(style.filter);
+  const sat = /saturate\(([-\d.]+)\)/.exec(style.filter);
+  lobe.scale = matrix.a;
+  lobe.hue = hue ? parseFloat(hue[1]) : 0;
+  lobe.sat = sat ? parseFloat(sat[1]) : 1;
+}
 
-<font face="Helvetica" size="6">
-july 18th 10p-late
-<br>
-sounds by chris and liam
-<br>
-3591 basement
-</font>
+function place(px, py, w, h) {
+  let dx = 0;
+  let dy = 0;
+  let grow = 0;
+  let hue = 0;
+  let sat = 0;
+  let weight = 0;
+  for (const lobe of lobes) {
+    const inf = falloff(px, py, lobe, w, h);
+    if (!inf) continue;
+    const ox = lobe.x * w;
+    const oy = lobe.y * h;
+    const swell = lobe.scale - 1;
+    dx += (px - ox) * swell * inf;
+    dy += (py - oy) * swell * inf;
+    grow += swell * inf;
+    hue += lobe.hue * inf;
+    sat += lobe.sat * inf;
+    weight += inf;
+  }
+  const cover = Math.max(weight, 1);
+  return {
+    dx: dx / cover,
+    dy: dy / cover,
+    grow: grow / cover,
+    hue: weight ? hue / weight : 0,
+    sat: weight ? sat / weight : 1,
+  };
+}
 
-<br><br><br>
+function measure() {
+  for (const span of letters) span.style.transform = 'none';
+  for (const span of letters) {
+    const rect = span.getBoundingClientRect();
+    span.home = {
+      x: rect.left + rect.width / 2,
+      y: rect.top + rect.height / 2,
+    };
+  }
+}
 
-<font face="Helvetica" size="5">
-{ no judgement be hot (mystical whimsical attire) only cool people yada yada }
-</font>
-</center>
+function bend() {
+  const w = innerWidth;
+  const h = innerHeight;
+  for (const lobe of lobes) readLobe(lobe);
+  for (const line of document.querySelectorAll('main h1, main p')) {
+    const posed = [...line.children].map((span) => ({ span, ...place(span.home.x, span.home.y, w, h) }));
+    for (let i = 0; i < posed.length; i++) {
+      const curr = posed[i];
+      const prev = posed[Math.max(0, i - 1)];
+      const next = posed[Math.min(posed.length - 1, i + 1)];
+      const rise = (next.dy - prev.dy) * BEND;
+      const run = (next.span.home.x - prev.span.home.x) || 1;
+      const angle = Math.atan2(rise, run) * 180 / Math.PI;
+      curr.span.style.transform = `translate(${curr.dx * BEND}px, ${curr.dy * BEND}px) rotate(${angle}deg) scale(${1 + curr.grow})`;
+      curr.span.style.filter = `hue-rotate(${curr.hue}deg) saturate(${curr.sat})`;
+    }
+  }
+  if (!reduced) requestAnimationFrame(bend);
+}
 
-
+document.fonts.ready.then(() => {
+  measure();
+  addEventListener('resize', measure);
+  if (!reduced) bend();
+});
+</script>
 </body>
-<br><br><br><br><br><br><br><br><br><br><br><br><br>
-
 </html>
