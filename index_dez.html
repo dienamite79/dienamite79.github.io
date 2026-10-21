@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>dirtbag disco</title>
+<style>
+@font-face {
+  font-family: Sandstone;
+  src: url("Sandstone.ttf") format("truetype");
+}
+html, body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+}
+body {
+  display: grid;
+  place-items: center;
+  text-align: center;
+  color: #3a2618;
+}
+.scene {
+  --mag: 1.15;
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+}
+@media (pointer: coarse) {
+  .scene { --mag: 1.3225; }
+}
+.plate, .lobe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.plate {
+  animation: ground 21.538s ease-in-out infinite;
+}
+.lobe {
+  transform-origin: var(--x) var(--y);
+  -webkit-mask-image: radial-gradient(circle at var(--x) var(--y), #000 8%, transparent var(--r));
+  mask-image: radial-gradient(circle at var(--x) var(--y), #000 8%, transparent var(--r));
+  animation: lobe var(--dur) ease-in-out infinite;
+  animation-delay: var(--d);
+}
+@keyframes ground {
+  0%, 100% { filter: hue-rotate(calc(-2.55deg * var(--mag))) saturate(calc(1 - 0.034 * var(--mag))); }
+  50% { filter: hue-rotate(calc(3.4deg * var(--mag))) saturate(calc(1 + 0.085 * var(--mag))); }
+}
+@keyframes lobe {
+  0%, 100% {
+    transform: scale(1);
+    filter: hue-rotate(0deg) saturate(1);
+  }
+  50% {
+    transform: scale(var(--swell));
+    filter: hue-rotate(var(--hue)) saturate(var(--sat));
+  }
+}
+h1 span, p span {
+  display: inline-block;
+  white-space: pre;
+  transform-origin: center;
+}
+h1, p {
+  font-family: Sandstone, sans-serif;
+  font-weight: normal;
+  margin: 0;
+}
+h1 {
+  font-size: clamp(48px, 9vw, 120px);
+}
+p {
+  margin-top: 0.35em;
+  font-size: clamp(22px, 3.5vw, 48px);
+}
+.where {
+  margin-top: 0.7em;
+  font-size: clamp(16px, 2.4vw, 32px);
+}
+.where a {
+  color: inherit;
+  text-decoration: none;
+}
+.where .mark img {
+  height: 1.7em;
+  width: auto;
+  display: block;
+}
+@media (prefers-reduced-motion: reduce) {
+  .plate, .lobe, main { animation: none; }
+}
+</style>
+</head>
+<body>
+<div class="scene" aria-hidden="true">
+  <img class="plate" src="sandstone_still.jpg" alt="">
+  <img class="lobe" style="--x:18%; --y:40%; --d:0s; --dur:14.769s; --swell:calc(1 + 0.119 * var(--mag)); --hue:calc(6.8deg * var(--mag)); --sat:calc(1 + 0.153 * var(--mag)); --r:48%" src="sandstone_still.jpg" alt="">
+  <img class="lobe" style="--x:48%; --y:22%; --d:-3.692s; --dur:12.462s; --swell:calc(1 + 0.085 * var(--mag)); --hue:calc(-5.1deg * var(--mag)); --sat:calc(1 + 0.102 * var(--mag)); --r:40%" src="sandstone_still.jpg" alt="">
+  <img class="lobe" style="--x:78%; --y:38%; --d:-7.231s; --dur:17.692s; --swell:calc(1 + 0.136 * var(--mag)); --hue:calc(8.5deg * var(--mag)); --sat:calc(1 + 0.17 * var(--mag)); --r:50%" src="sandstone_still.jpg" alt="">
+  <img class="lobe" style="--x:30%; --y:76%; --d:-9.385s; --dur:11.385s; --swell:calc(1 + 0.102 * var(--mag)); --hue:calc(-6.8deg * var(--mag)); --sat:calc(1 + 0.119 * var(--mag)); --r:44%" src="sandstone_still.jpg" alt="">
+  <img class="lobe" style="--x:70%; --y:80%; --d:-4.923s; --dur:15.846s; --swell:calc(1 + 0.0765 * var(--mag)); --hue:calc(4.25deg * var(--mag)); --sat:calc(1 + 0.136 * var(--mag)); --r:42%" src="sandstone_still.jpg" alt="">
+  <img class="lobe" style="--x:52%; --y:52%; --d:-8.462s; --dur:19.692s; --swell:calc(1 + 0.068 * var(--mag)); --hue:calc(5.95deg * var(--mag)); --sat:calc(1 + 0.085 * var(--mag)); --r:34%" src="sandstone_still.jpg" alt="">
+</div>
+<main>
+  <h1>dirtbag disco</h1>
+  <p>oct 17 8pm</p>
+  <p class="where"><a href="https://www.google.com/maps" target="_blank" rel="noopener"><span class="mark"><img src="pointer.png" alt=""></span></a></p>
+  <p>costumes required</p>
+</main>
+<script>
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const scene = document.querySelector('.scene');
+function magnitude() {
+  return parseFloat(getComputedStyle(scene).getPropertyValue('--mag')) || 1;
+}
+const lobes = [...document.querySelectorAll('.lobe')].map((el) => ({
+  el,
+  x: parseFloat(el.style.getPropertyValue('--x')) / 100,
+  y: parseFloat(el.style.getPropertyValue('--y')) / 100,
+  r: parseFloat(el.style.getPropertyValue('--r')) / 100,
+}));
+const letters = [];
+
+function split(el) {
+  const text = el.textContent;
+  el.textContent = '';
+  for (const ch of text) {
+    const span = document.createElement('span');
+    span.textContent = ch;
+    el.appendChild(span);
+    letters.push(span);
+  }
+}
+
+document.querySelectorAll('main h1, main p:not(.where)').forEach(split);
+
+async function loadCoords() {
+  const coords = (await fetch('coords.txt')).text().then((text) => text.trim());
+  const value = await coords;
+  const link = document.querySelector('.where a');
+  link.href = 'https://www.google.com/maps?q=' + encodeURIComponent(value);
+  letters.push(link.querySelector('.mark'));
+  for (const ch of value) {
+    const span = document.createElement('span');
+    span.textContent = ch;
+    link.appendChild(span);
+    letters.push(span);
+  }
+}
+
+function farthest(ox, oy, w, h) {
+  return Math.max(
+    Math.hypot(ox, oy),
+    Math.hypot(w - ox, oy),
+    Math.hypot(ox, h - oy),
+    Math.hypot(w - ox, h - oy)
+  );
+}
+
+function falloff(px, py, lobe, w, h) {
+  const ox = lobe.x * w;
+  const oy = lobe.y * h;
+  const maxR = farthest(ox, oy, w, h);
+  const d = Math.hypot(px - ox, py - oy);
+  const inner = 0.08 * maxR;
+  const outer = lobe.r * maxR;
+  if (d <= inner) return 1;
+  if (d >= outer) return 0;
+  const t = (d - inner) / (outer - inner);
+  return 1 - t * t * (3 - 2 * t);
+}
+
+function readLobe(lobe) {
+  const style = getComputedStyle(lobe.el);
+  const matrix = new DOMMatrix(style.transform);
+  const hue = /hue-rotate\(([-\d.]+)deg\)/.exec(style.filter);
+  const sat = /saturate\(([-\d.]+)\)/.exec(style.filter);
+  lobe.scale = matrix.a;
+  lobe.hue = hue ? parseFloat(hue[1]) : 0;
+  lobe.sat = sat ? parseFloat(sat[1]) : 1;
+}
+
+function place(px, py, w, h) {
+  let dx = 0;
+  let dy = 0;
+  let grow = 0;
+  let hue = 0;
+  let sat = 0;
+  let weight = 0;
+  for (const lobe of lobes) {
+    const inf = falloff(px, py, lobe, w, h);
+    if (!inf) continue;
+    const ox = lobe.x * w;
+    const oy = lobe.y * h;
+    const swell = lobe.scale - 1;
+    dx += (px - ox) * swell * inf;
+    dy += (py - oy) * swell * inf;
+    grow += swell * inf;
+    hue += lobe.hue * inf;
+    sat += lobe.sat * inf;
+    weight += inf;
+  }
+  const cover = Math.max(weight, 1);
+  return {
+    dx: dx / cover,
+    dy: dy / cover,
+    grow: grow / cover,
+    hue: weight ? hue / weight : 0,
+    sat: weight ? sat / weight : 1,
+  };
+}
+
+function measure() {
+  for (const span of letters) span.style.transform = 'none';
+  for (const span of letters) {
+    const rect = span.getBoundingClientRect();
+    span.home = {
+      x: rect.left + rect.width / 2,
+      y: rect.top + rect.height / 2,
+    };
+  }
+}
+
+function bend() {
+  const w = innerWidth;
+  const h = innerHeight;
+  for (const lobe of lobes) readLobe(lobe);
+  for (const line of document.querySelectorAll('main h1, main p')) {
+    const spans = [...line.querySelectorAll(':scope > a > span, :scope > span')];
+    const posed = spans.map((span) => ({ span, ...place(span.home.x, span.home.y, w, h) }));
+    for (let i = 0; i < posed.length; i++) {
+      const curr = posed[i];
+      const prev = posed[Math.max(0, i - 1)];
+      const next = posed[Math.min(posed.length - 1, i + 1)];
+      const title = line.tagName === 'H1';
+      const trim = title ? 0.88 : 1;
+      const bend = 3.4 * trim * magnitude() / 1.3225;
+      const rise = (next.dy - prev.dy) * bend;
+      const run = (next.span.home.x - prev.span.home.x) || 1;
+      const angle = Math.atan2(rise, run) * 180 / Math.PI * (title ? 0.45 : 1);
+      const held = trim / 1.15;
+      const hue = curr.hue * held;
+      const sat = 1 + (curr.sat - 1) * held;
+      curr.span.style.transform = `translate(${curr.dx * bend}px, ${curr.dy * bend}px) rotate(${angle}deg) scale(${1 + curr.grow * held})`;
+      curr.span.style.filter = `hue-rotate(${hue}deg) saturate(${sat})`;
+    }
+  }
+  if (!reduced) requestAnimationFrame(bend);
+}
+
+document.fonts.ready.then(async () => {
+  await loadCoords();
+  const pin = document.querySelector('.where img');
+  if (pin) await pin.decode().catch(() => {});
+  measure();
+  addEventListener('resize', measure);
+  if (!reduced) bend();
+});
+</script>
+</body>
+</html>
